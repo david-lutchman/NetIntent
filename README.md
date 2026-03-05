@@ -4,27 +4,17 @@ AI-powered desktop application for analyzing Cisco IOS/IOS-XE configurations and
 
 ## Quick Start
 
-### Build from source
+1. Download `netintent.exe` from this repository (`src-tauri/target/release/netintent.exe`)
+2. Double-click to launch — no installer required
+3. Click the **gear icon** (top right) → choose Claude or Gemini → paste your API key → Save
+4. Click **Load** to upload one or more device configs (.cfg, .conf, .txt)
+5. Check the devices you want to target in the sidebar
+6. Click **Make Changes** → describe what you want in plain English → **Analyze**
+7. Review the change plan → approve/reject individual changes
+8. Click **View Topology** to see the projected network state after changes
+9. **Export** scripts per device or all at once
 
-```bash
-git clone https://github.com/david-lutchman/NetIntent.git
-cd NetIntent
-npm install
-cargo tauri build   # → src-tauri/target/release/netintent.exe
-```
-
-**Prerequisites:** [Node.js 18+](https://nodejs.org), [Rust](https://rustup.rs), [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
-
-### Using the app
-
-1. Launch the app
-2. Click the **gear icon** (top right) → choose Claude or Gemini → paste your API key → Save
-3. Click **Load** to upload one or more device configs (.cfg, .conf, .txt)
-4. Check the devices you want to target in the sidebar
-5. Click **Make Changes** → describe what you want in plain English → **Analyze**
-6. Review the change plan → approve/reject individual changes
-7. Click **View Topology** to see the projected network state after changes
-8. **Export** scripts per device or all at once
+**Requirement:** Windows 10 or 11 with [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (included in Windows 10 21H2+ and all Windows 11)
 
 ## Getting an API Key
 
@@ -93,8 +83,6 @@ Every generated change is individually approvable with full context: action type
 
 ## Architecture
 
-### Overview
-
 NetIntent is a local-first desktop application. All config parsing, secret redaction, and topology inference happen on your machine. The only external communication is the API call to your chosen LLM provider, which receives only redacted config excerpts.
 
 ```
@@ -133,28 +121,6 @@ NetIntent is a local-first desktop application. All config parsing, secret redac
 | **Bundler** | Vite | Development server with hot module replacement |
 | **Diagram** | SVG (hand-rolled) | Interactive network topology with pan, zoom, drag |
 
-### Frontend Modules
-
-| Module | Responsibility |
-|--------|---------------|
-| `App.tsx` | Root layout, view routing, device state management |
-| `lib/parser.ts` | Vendor detection (IOS vs IOS-XE), config sectioning, intent-based section filtering |
-| `lib/redact.ts` | 15 regex rules for stripping passwords, keys, communities before LLM submission |
-| `lib/db.ts` | SQLite persistence via tauri-plugin-sql (devices, topology, plans, settings) |
-| `lib/prompts.ts` | System and user prompt construction for single and multi-device analysis |
-| `lib/topology.ts` | Port extraction, connection detection, topology projection after changes |
-| `lib/types.ts` | TypeScript interfaces for all data structures |
-| `components/NetworkDiagram.tsx` | Interactive SVG canvas with drag, zoom, connect mode, diff visualization |
-
-### Rust Backend Commands
-
-| IPC Command | Function |
-|-------------|----------|
-| `read_config_file` | Reads a file from disk, returns content + metadata |
-| `save_file` | Writes exported change scripts to disk |
-| `call_claude` | HTTPS POST to Anthropic Messages API |
-| `call_gemini` | HTTPS POST to Google Gemini generateContent API |
-
 ### Data Flow
 
 1. **Upload** — User selects config files via native file dialog → Rust reads from disk → returns raw text to frontend
@@ -189,12 +155,6 @@ Load both to test multi-device changes and topology auto-detection. The uplink i
 - **API key stored locally** — saved to SQLite in your app data directory, never sent anywhere except the LLM provider
 - **Direct API calls** — your machine talks directly to api.anthropic.com or generativelanguage.googleapis.com over TLS
 
-## System Requirements
-
-- Windows 10 or 11 (64-bit)
-- WebView2 runtime (included in Windows 10 21H2+ and all Windows 11)
-- Internet connection (for API calls to Claude or Gemini only)
-
 ## Troubleshooting
 
 **"WebView2 not found"**
@@ -220,4 +180,4 @@ When testing, please note any issues with:
 
 ---
 
-*NetIntent v0.1.0 — Beta · Build from source · Windows only*
+*NetIntent v0.1.0 — Beta · Windows only*
