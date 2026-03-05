@@ -8,3 +8,4 @@ src-tauri/target/
 # Misc
 .DS_Store
 *.log
+netintent.exe
