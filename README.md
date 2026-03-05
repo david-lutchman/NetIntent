@@ -4,7 +4,20 @@ AI-powered desktop application for analyzing Cisco IOS/IOS-XE configurations and
 
 ## Quick Start
 
-1. Double-click **NetIntent.exe**
+### Build from source
+
+```bash
+git clone https://github.com/david-lutchman/NetIntent.git
+cd NetIntent
+npm install
+cargo tauri build   # → src-tauri/target/release/netintent.exe
+```
+
+**Prerequisites:** [Node.js 18+](https://nodejs.org), [Rust](https://rustup.rs), [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
+
+### Using the app
+
+1. Launch the app
 2. Click the **gear icon** (top right) → choose Claude or Gemini → paste your API key → Save
 3. Click **Load** to upload one or more device configs (.cfg, .conf, .txt)
 4. Check the devices you want to target in the sidebar
@@ -115,6 +128,7 @@ NetIntent is a local-first desktop application. All config parsing, secret redac
 | **Desktop Runtime** | Tauri 2.0 | Native window, IPC bridge, system dialogs, filesystem access |
 | **Backend** | Rust | File I/O, HTTPS requests to LLM APIs via reqwest + rustls-tls |
 | **Frontend** | React 18 + TypeScript | UI components, state management, config parsing |
+| **Persistence** | SQLite (tauri-plugin-sql) | Devices, topology positions, plans, and settings survive restarts |
 | **Styling** | Tailwind CSS | Utility-first styling with custom dark theme |
 | **Bundler** | Vite | Development server with hot module replacement |
 | **Diagram** | SVG (hand-rolled) | Interactive network topology with pan, zoom, drag |
@@ -125,7 +139,8 @@ NetIntent is a local-first desktop application. All config parsing, secret redac
 |--------|---------------|
 | `App.tsx` | Root layout, view routing, device state management |
 | `lib/parser.ts` | Vendor detection (IOS vs IOS-XE), config sectioning, intent-based section filtering |
-| `lib/redact.ts` | 14 regex rules for stripping passwords, keys, communities before LLM submission |
+| `lib/redact.ts` | 15 regex rules for stripping passwords, keys, communities before LLM submission |
+| `lib/db.ts` | SQLite persistence via tauri-plugin-sql (devices, topology, plans, settings) |
 | `lib/prompts.ts` | System and user prompt construction for single and multi-device analysis |
 | `lib/topology.ts` | Port extraction, connection detection, topology projection after changes |
 | `lib/types.ts` | TypeScript interfaces for all data structures |
@@ -171,7 +186,7 @@ Load both to test multi-device changes and topology auto-detection. The uplink i
 - **Configs never leave your machine** — parsing, redaction, and topology inference all run locally
 - **Only redacted excerpts** are sent to the LLM API — all secrets are stripped first
 - **Your API key, your billing** — NetIntent has no servers, no accounts, no telemetry
-- **API keys are stored in memory only** — not persisted to disk, cleared when you close the app
+- **API key stored locally** — saved to SQLite in your app data directory, never sent anywhere except the LLM provider
 - **Direct API calls** — your machine talks directly to api.anthropic.com or generativelanguage.googleapis.com over TLS
 
 ## System Requirements
@@ -181,9 +196,6 @@ Load both to test multi-device changes and topology auto-detection. The uplink i
 - Internet connection (for API calls to Claude or Gemini only)
 
 ## Troubleshooting
-
-**"Windows protected your PC" (SmartScreen)**
-This appears because the app is not yet code-signed. Click "More info" → "Run anyway". This only happens on first launch.
 
 **"WebView2 not found"**
 Download the Evergreen Bootstrapper from [developer.microsoft.com/en-us/microsoft-edge/webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
@@ -208,4 +220,4 @@ When testing, please note any issues with:
 
 ---
 
-*NetIntent v0.1.0 — Beta*
+*NetIntent v0.1.0 — Beta · Build from source · Windows only*
