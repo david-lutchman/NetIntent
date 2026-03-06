@@ -2,7 +2,7 @@
 
 AI-powered desktop application for analyzing multi-vendor network configurations and generating precise CLI change scripts from plain English. Load your entire environment, visualize the topology, describe what you want, and export ready-to-paste commands — all processed locally with only redacted excerpts sent to the LLM.
 
-> **Trial version** — this build includes a 7-day free trial. Contact [hello@netintent.app](mailto:hello@netintent.app) to continue after the trial period.
+> **Trial version** — this build includes a 7-day free trial. Contact [dlutchman@gmail.com](mailto:dlutchman@gmail.com) to continue after the trial period.
 
 ## Quick Start
 
