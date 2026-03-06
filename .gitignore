@@ -10,7 +10,6 @@
 !samples/**
 
 # Keep the distributable binary
-!src-tauri/
-!src-tauri/target/
-!src-tauri/target/release/
-!src-tauri/target/release/netintent.exe
+!target/
+!target/release/
+!target/release/netintent.exe

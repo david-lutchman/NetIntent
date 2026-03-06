@@ -1,0 +1,78 @@
+Single-device — Cisco
+
+"Add VLAN 100 named Marketing, assign Gi0/3 and Gi0/4 as access ports, and trunk it on all uplinks"
+"Configure OSPF area 0 on all Layer 3 interfaces with MD5 authentication using key 'ospftest'"
+"Shut down all access ports not in use and move them to quarantine VLAN 999"
+
+
+Single-device — Arista
+
+"Add VLAN 100 named Analytics, configure Ethernet5 as an access port in that VLAN, and allow it on all trunk uplinks"
+"Enable BFD on all OSPF interfaces with 300ms intervals and multiplier 3"
+"Configure a management API ACL to allow only 10.99.0.0/24 and drop all other access"
+
+
+Single-device — Juniper
+
+"Add a new VLAN 50 named Contractors with ID 50, create an IRB interface with IP 10.10.50.1/24, and add it to the OSPF area 0 as passive"
+"Configure a firewall filter on ge-0/0/3 to block all traffic except SSH from 10.99.0.0/24"
+"Change the LACP mode on ae0 from active to passive and reduce the periodic timer to slow"
+
+
+Single-device — MikroTik
+
+"Add a new VLAN interface vlan50 on ether2 with ID 50, assign IP 192.168.75.1/24, and add a firewall rule allowing only HTTP/HTTPS from that subnet"
+"Create a static route for 172.31.0.0/16 via the gateway at 192.168.70.254"
+"Add a firewall filter rule to block all traffic from the guest subnet to the LAN subnet"
+
+
+Single-device — Fortinet
+
+"Create a new address object for the IoT segment 192.168.90.0/24 and add a firewall policy denying it access to the TRUST-LAN and SERVERS zones"
+"Add a secondary syslog server at 10.0.0.51 with UDP port 514"
+"Change the VPN phase2 proposal to aes256gcm-prfsha384 and set the keylife to 3600 seconds"
+
+
+Single-device — Extreme
+
+"Create a new VLAN called PrinterVLAN with tag 50, add ports 28-30 as untagged, and trunk it on ports 1 and 2"
+"Disable all ports in the Quarantine VLAN and add a description 'QUARANTINE-DISABLED' to each"
+"Enable LLDP on all ports and configure the system to advertise the management address"
+
+
+Single-device — HPE/Aruba
+
+"Add VLAN 50 named IoT, assign ports 19-22 as untagged members, and tag it on trunk uplinks 25 and 26"
+"Configure RSTP priority to 8192 and enable BPDU protection on all edge ports"
+"Add a RADIUS server at 10.0.0.21 as a backup with key 'radiusbackup'"
+
+
+Single-device — Huawei
+
+"Create VLAN 50 with description 'IoT-Devices', configure GigabitEthernet0/0/10 as an access port in VLAN 50 with STP edge-port enabled"
+"Add OSPF authentication on the GigabitEthernet0/0/0 interface using MD5 key 'ospfkeyhuawei'"
+"Set the SNMP trap source to the Vlanif99 interface and add 10.0.0.51 as a secondary trap host"
+
+
+Single-device — Nokia
+
+"Add a new router interface on port 1/1/7 with IP 10.1.0.53/30 and enable OSPF on it in area 0"
+"Configure a BGP peer at 10.255.0.32 as an iBGP neighbor in the IBGP-PEERS group"
+"Add a static route for 192.168.100.0/24 via 10.1.0.34 with a route description of VPN-BRANCH-STATIC"
+
+
+Multi-device — cross-vendor
+
+"Add VLAN 200 named Analytics across all switches (Cisco, Arista, Juniper, Extreme, HPE, Huawei) and ensure all interswitch trunks allow it"
+"Standardize NTP to 10.0.0.10 as primary and 10.0.0.11 as secondary on every device in the environment"
+"Add a syslog server at 10.0.0.51 as a secondary log target on all devices"
+"Change the OSPF hello interval to 10 seconds and dead interval to 40 seconds on all devices running OSPF"
+"Set both firewalls (Fortinet HQ and Branch) to block all traffic from guest subnets to the internal server range 10.50.0.0/24"
+
+
+Adversarial / edge cases
+
+"Delete VLAN 1" — should warn about native VLAN risk
+"Enable telnet on all VTY lines" — should flag as a security risk
+"Remove the OSPF configuration from the Nokia core gateway" — high impact, should warn about adjacency loss
+"Add a default route on the Huawei access switch pointing to 10.0.0.1" — tests if it respects existing routes
