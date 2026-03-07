@@ -213,7 +213,7 @@ When testing, please note any issues with:
 - Topology detection misses or false positives
 - Vendor misdetection
 
-Contact: [hello@netintent.app](mailto:hello@netintent.app)
+Contact: [dlutchman@gmail.com](mailto:dlutchman@gmail.com)
 
 ---
 
