@@ -122,7 +122,6 @@ Eighteen test configs are included in the `samples/` folder — two devices per 
 | `huawei-core-sw01.cfg`, `huawei-access-sw02.cfg` | Huawei VRP | HUAWEI-CORE-SW01, HUAWEI-ACCESS-SW02 |
 | `nokia-core-gw01.cfg`, `nokia-dist-gw02.cfg` | Nokia SR OS | NOKIA-CORE-GW01, NOKIA-DIST-GW02 |
 
-See `samples/sample-prompts.txt` for a full list of tested intents per vendor.
 
 ## Architecture
 
