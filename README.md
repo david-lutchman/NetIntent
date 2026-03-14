@@ -40,7 +40,7 @@ The parser scores config text against vendor-specific patterns and picks the hig
 
 | Provider | Key Required | Models |
 |----------|-------------|--------|
-| **Claude** (Anthropic) | Yes — [console.anthropic.com](https://console.anthropic.com) | Claude Sonnet 4.5, Claude Opus 4.5 |
+| **Claude** (Anthropic) | Yes — [console.anthropic.com](https://console.anthropic.com) | Claude Sonnet 4, Claude Opus 4 |
 | **Gemini** (Google) | Yes — [aistudio.google.com](https://aistudio.google.com/app/apikey) | Gemini 2.0 Flash, Gemini 2.5 Pro |
 | **ChatGPT** (OpenAI) | Yes — [platform.openai.com](https://platform.openai.com/api-keys) | GPT-4o, GPT-4o mini, o1 |
 | **Ollama** (local) | None | Any locally-pulled model (e.g. `llama3.2`) |
@@ -187,6 +187,45 @@ NetIntent is a local-first desktop application. All config parsing, secret redac
 - **No DevTools in production** — the WebView2 inspector is compiled out; right-click and inspect shortcuts are blocked
 - **Hardened JS bundle** — identifier mangling, no source maps, console stripped
 
+## Changelog
+
+### v0.2.0
+
+**Multi-vendor config-apply engine**
+- Config-apply now handles vendor-native block structures in-place instead of dumb-appending:
+  - **Fortinet FortiOS** — parses `config / edit / next / end` hierarchy and merges edits into existing sections
+  - **Juniper Junos** — merges `set` / `delete` commands, handles additive `vlan members`, replaces by path key
+  - **Nokia SR OS** — replaces existing port blocks in-place, injects new content before closing `exit`
+  - **HPE Aruba** — uses `exit` (not `!`) as block separator, replaces interface/VLAN blocks correctly
+  - **Cisco IOS / IOS-XE / Arista EOS / Huawei VRP** — existing block-replace logic refined
+
+**Improved LLM prompt accuracy**
+- Fixed "interface 3" ambiguity — the LLM no longer misinterprets port numbers as device numbers (e.g. "uplink to interface 3 of the switch" now correctly targets port 3 on that device, not device #3)
+- Added explicit SPECIFIC PORT guidance in the system prompt for uplink target selection
+
+**Config preview before commit**
+- Plan view now shows a real "Current / After commit" side-by-side diff using the same `applyCommandsToRawConfig()` code path as the actual commit — no more mismatches between preview and committed config
+
+**Nokia SR OS port extraction fix**
+- Nokia port/IP extraction now cross-references physical port sections with router interface sections to correctly map IP addresses to physical ports
+
+**Vendor matrix test suite**
+- 354 tests across all 10 vendors (up from 210)
+- Added uplink scenario tests per vendor: apply commands to device A, parse new device C, verify link detection and port mode
+- Port mode verification (trunk / access / routed) on extracted ports
+
+### v0.1.0
+
+- Initial beta release
+- Full pipeline: upload → parse → redact → prompt → LLM → plan → export
+- 9 vendor parsers with auto-detection
+- Interactive SVG topology with projected before/after view
+- Secret redaction (14 regex patterns)
+- SQLite persistence — all state survives app restarts
+- Streaming LLM responses (Claude, Gemini, ChatGPT, Ollama)
+- Config validation engine with inline warnings
+- Multi-device coordinated changes
+
 ## Troubleshooting
 
 **"WebView2 not found"**
@@ -218,4 +257,4 @@ Contact: [dlutchman@gmail.com](mailto:dlutchman@gmail.com)
 
 ---
 
-*NetIntent v0.1.0 — Trial · Windows only*
+*NetIntent v0.2.0 — Trial · Windows only*
