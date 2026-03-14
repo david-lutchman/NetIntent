@@ -1,6 +1,6 @@
 # NetIntent — Network Configuration Assistant
 
-AI-powered desktop application for analyzing multi-vendor network configurations and generating precise CLI change scripts from plain English. Load your entire environment, visualize the topology, describe what you want, and export ready-to-paste commands — all processed locally with only redacted excerpts sent to the LLM.
+AI-powered desktop application for designing networks from scratch or analyzing existing multi-vendor configurations — then generating precise CLI change scripts from plain English. Describe a network and get complete device configs, or load your existing environment, visualize the topology, and export ready-to-paste commands. All processing happens locally; only redacted excerpts are sent to the LLM.
 
 > **Trial version** — this build includes a 7-day trial. Contact [dlutchman@gmail.com](mailto:dlutchman@gmail.com) to continue after the trial period.
 
@@ -9,6 +9,17 @@ AI-powered desktop application for analyzing multi-vendor network configurations
 1. Download `target/release/netintent.exe` from this repository
 2. Double-click to launch — no installer required
 3. Click the **gear icon** (top right) → choose an LLM provider → paste your API key → Save
+
+**Option A — Design a new network from scratch:**
+
+4. Click **Design Network** in the sidebar
+5. Describe the network you want in plain English (e.g. "3-building campus, Cisco, OSPF, voice VLANs per floor")
+6. The LLM generates complete device configs for every device in the design
+7. Review the summary, addressing scheme, and device list → click **Load into NetIntent**
+8. All devices appear in the sidebar with a full interactive topology
+
+**Option B — Modify existing configs:**
+
 4. Click **Load** to upload one or more device configs (`.cfg`, `.conf`, `.txt`, `.rsc`)
 5. Check the devices you want to target in the sidebar
 6. Click **Make Changes** → describe your intent in plain English → **Analyze**
@@ -49,6 +60,21 @@ Responses stream token-by-token — you see the JSON being generated in real tim
 
 ## Features
 
+### AI Network Design (Design from Scratch)
+Describe a network in plain English and the LLM generates complete, production-ready device configs for every device in the design. The planning prompt enforces cross-device consistency: matching VLANs, IP addressing schemes, routing protocol neighbors, trunk allowed VLANs, and interface descriptions that reference neighbor hostnames for automatic topology detection.
+
+- **Any supported vendor** — specify Cisco, Juniper, Arista, Fortinet, or let the LLM pick appropriate vendors per role
+- **Streaming generation** — watch the JSON response build in real time
+- **Review before loading** — summary, addressing scheme, and per-device breakdown with vendor badges
+- **One-click load** — generated configs are parsed and loaded as real devices with full topology, config browser, and change management
+
+Example prompts:
+- "2-building office campus, 5 floors each, Cisco IOS-XE routers and Cisco IOS switches, OSPF area 0, voice VLANs per floor"
+- "Small branch with a Fortinet firewall, HPE Aruba access switch, and a MikroTik router for WAN"
+- "Data center leaf-spine with 4 Arista EOS leaf switches and 2 spine switches, BGP EVPN"
+
+Once loaded, designed networks work exactly like uploaded configs — you can modify them with change intents, view projected topology, and export CLI scripts.
+
 ### Multi-Vendor Config Parsing
 Automatically detects the vendor OS from the config text, extracts hostname and version, and splits the running config into browsable sections: interfaces, VLANs, routing protocols, ACLs, line configs, crypto, QoS, and global commands. Filter by section type to quickly find what you need. If auto-detection is wrong, click the vendor badge in the sidebar to override it manually.
 
@@ -86,6 +112,11 @@ Responses stream token-by-token — the raw JSON appears in the processing pane 
 Every generated change is individually approvable with full context: action type (add/modify/remove), affected section, reasoning, impact rating (low/medium/high), and the exact CLI commands. Copy individual command blocks to clipboard, view before/after diffs per section, and export per-device or environment-wide scripts with rollback commands included.
 
 ## Example Intents
+
+**Network design (from scratch):**
+- "3-site enterprise WAN with Cisco IOS-XE routers, OSPF, DMVPN hub-and-spoke, each site has a pair of access switches"
+- "Single-building office: Fortinet firewall, 2 HPE Aruba switches stacked, guest and corporate VLANs, RADIUS"
+- "Juniper leaf-spine data center fabric, 4 leaf + 2 spine, eBGP underlay, VXLAN EVPN overlay"
 
 **Single device:**
 - "Add VLAN 100 named Marketing, assign Gi0/3 and Gi0/4 as access ports, and trunk it on all uplinks" *(Cisco)*
