@@ -83,9 +83,10 @@ An auto-generated network diagram built from your uploaded configs. The topology
 
 - **Drag** to reposition devices (positions are preserved across restarts)
 - **Scroll** to zoom, **drag background** to pan, **Fit** button to auto-frame
-- **Port dots** along each device, color-coded by mode (blue = trunk, green = access, amber = routed, gray = shutdown)
+- **Smart port display** — only connected ports shown by default with a `+N` badge for hidden ports; switch to Connect mode to reveal all physical ports
+- **Port dots** along each device, color-coded by mode (blue = trunk, green = access, gray = shutdown). Routed interfaces and subinterfaces are filtered out for a cleaner view.
 - **Hover** any port for name, mode, VLAN, and allowed VLAN details
-- **Connect mode** — manually link two ports across devices by clicking them
+- **Connect mode** — manually link two ports across devices by clicking them (all physical ports become visible)
 - **Delete links** — select a link and remove it
 - **Port detail panel** — click the ℹ button on any device to see all interfaces, SVIs, IP addresses, and connections
 - **Double-click** any device to jump to its config view
@@ -240,8 +241,13 @@ NetIntent is a local-first desktop application. All config parsing, secret redac
 **Nokia SR OS port extraction fix**
 - Nokia port/IP extraction now cross-references physical port sections with router interface sections to correctly map IP addresses to physical ports
 
+**Cleaner topology view**
+- Routed interfaces and subinterfaces (e.g. `Gi0/0.100`) are no longer shown as port dots or links in the topology
+- Smart port filtering: only connected ports displayed in Select mode, all physical ports revealed in Connect mode
+- Hidden port count badge (`+N`) on each device so you know how many ports are available
+
 **Vendor matrix test suite**
-- 354 tests across all 10 vendors (up from 210)
+- 693 tests across 12 test files (up from 210)
 - Added uplink scenario tests per vendor: apply commands to device A, parse new device C, verify link detection and port mode
 - Port mode verification (trunk / access / routed) on extracted ports
 
