@@ -137,21 +137,51 @@ Every generated change is individually approvable with full context: action type
 - "Enable telnet on all VTY lines" — should flag as a security risk
 - "Remove the OSPF configuration from the Nokia core gateway" — should warn about adjacency loss
 
+## Known Issues (v0.2.0) — actively being fixed
+
+The following issues have been identified since the v0.2.0 release and fixes are in progress for the next update:
+
+**Diagnostic/optimization fixes appending config blocks instead of merging in-place**
+- When the Diagnose, Optimize, or Audit tools generate suggested fixes, the resulting CLI commands were being appended at the bottom of the device config instead of modifying existing config sections in-place. Device configs should always show clean running-config format with all changes applied to the correct location. *Status: fix implemented — merge-mode config engine now handles incremental CLI commands separately from full-section replacements.*
+
+**Named ACL blocks, key chains, and control-plane treated as global commands**
+- `ip access-list extended/standard NAME`, `key chain NAME`, and `control-plane` were not recognized as block headers, causing their sub-commands (permit/deny entries, key-strings, service-policies) to be dumped as flat global lines at the end of the config. *Status: fixed — these are now properly recognized as block-structured sections.*
+
+**ACL permit/deny lines replacing each other instead of coexisting**
+- When merging commands into an existing named ACL, different `permit` and `deny` entries (e.g. `permit tcp any any eq 22` and `permit icmp any any`) would overwrite each other because they shared the same command key. ACL entries are inherently multi-value and should coexist. *Status: fixed — ACL entries now use the full line as their identity key.*
+
+**`interface range` syntax appearing in suggested fixes**
+- The LLM sometimes generated `interface range GigabitEthernet0/1-4` syntax in diagnostic fixes, which doesn't merge correctly into individual interface blocks. *Status: fixed — diagnostic prompts now explicitly prohibit interface range syntax.*
+
+**`[REDACTED]` appearing in device configs after applying fixes**
+- When the LLM echoed back redacted secrets in its suggested fix commands, those `[REDACTED]` strings would overwrite real (hashed) passwords in the config. *Status: fixed — merge mode now skips any command containing `[REDACTED]`.*
+
+**Cisco IOS-XE configs detected as Cisco IOS**
+- Configs with `version 17.x` and `license boot level` were sometimes detected as IOS instead of IOS-XE because shared Cisco patterns (hostname, interface, router, etc.) only scored for IOS. *Status: fixed — shared patterns now score for both IOS and IOS-XE, letting the version-specific signals determine the winner.*
+
+**VLAN add deduplication**
+- Applying `switchport trunk allowed vlan add 100` twice to the same interface would produce `10,20,30,100,100` instead of `10,20,30,100`. *Status: fixed — dedup logic ensures idempotency.*
+
+These fixes are tested (900+ unit tests passing) and will be included in the next binary release.
+
 ## Sample Configs
 
-Eighteen test configs are included in the `samples/` folder — two devices per vendor for multi-device testing:
+Ten test configs are included in the `samples/` folder — one device per vendor, all part of a coherent "ACME Corp" multi-vendor enterprise network with cross-device interface references for topology auto-detection:
 
-| Files | Vendor | Hostnames |
-|-------|--------|-----------|
-| `cisco-core-sw01.cfg`, `cisco-dist-sw01.cfg` | Cisco IOS-XE | CISCO-CORE-SW01, CISCO-DIST-SW01 |
-| `arista-core-sw01.cfg`, `arista-dist-sw02.cfg` | Arista EOS | ARISTA-CORE-SW01, ARISTA-DIST-SW02 |
-| `juniper-core-gw01.conf`, `juniper-dist-sw01.conf` | Juniper Junos | juniper-core-gw01, juniper-dist-sw01 |
-| `extreme-access-sw01.cfg`, `extreme-access-sw02.cfg` | Extreme EXOS | EXTREME-ACCESS-SW01, EXTREME-ACCESS-SW02 |
-| `fortinet-hq-fw01.conf`, `fortinet-branch-fw02.conf` | Fortinet FortiOS | FW-HQ-01, FW-BRANCH-02 |
-| `mikrotik-core-gw01.rsc`, `mikrotik-branch-gw01.rsc` | MikroTik RouterOS | MikroTik-Core-GW01, MikroTik-Branch-GW01 |
-| `hpe-aruba-core-sw01.cfg`, `hpe-aruba-access-sw02.cfg` | HPE/Aruba | HPE-CORE-SW01, HPE-ACCESS-SW02 |
-| `huawei-core-sw01.cfg`, `huawei-access-sw02.cfg` | Huawei VRP | HUAWEI-CORE-SW01, HUAWEI-ACCESS-SW02 |
-| `nokia-core-gw01.cfg`, `nokia-dist-gw02.cfg` | Nokia SR OS | NOKIA-CORE-GW01, NOKIA-DIST-GW02 |
+| File | Vendor | Hostname | Role |
+|------|--------|----------|------|
+| `cisco-iosxe-edge-rtr01.cfg` | Cisco IOS-XE | CSR-EDGE-RTR01 | Edge router, BGP/OSPF, NAT |
+| `cisco-ios-access-sw03.cfg` | Cisco IOS | IOS-ACCESS-SW03 | Floor 3 access switch |
+| `arista-spine01.cfg` | Arista EOS | ARISTA-SPINE01 | DC spine switch, MSTP, OSPF |
+| `juniper-srx-fw01.conf` | Juniper Junos | SRX-FW01 | Perimeter firewall, zones/policies |
+| `mikrotik-branch-rtr01.rsc` | MikroTik RouterOS | MT-BRANCH-RTR01 | Branch WAN router, PPPoE |
+| `fortinet-dc-fw01.conf` | Fortinet FortiOS | FG-DC-FW01 | DC internal firewall, HA |
+| `extreme-tor-sw01.cfg` | Extreme EXOS | EXOS-TOR-SW01 | Top-of-rack switch |
+| `hpe-aruba-wlan-sw01.cfg` | HPE/Aruba | ARUBA-WLAN-SW01 | Wireless infrastructure, PoE |
+| `huawei-dist-sw01.cfg` | Huawei VRP | HW-DIST-SW01 | Distribution switch, DHCP relay |
+| `nokia-pe-rtr01.cfg` | Nokia SR OS | NOKIA-PE-RTR01 | MPLS PE router, L3VPN |
+
+A multi-device Cisco campus set is also available in `samples/cisco-campus/` (2 routers + 10 floor switches).
 
 
 ## Architecture
@@ -244,9 +274,10 @@ NetIntent is a local-first desktop application. All config parsing, secret redac
 - Hidden port count badge (`+N`) on each device so you know how many ports are available
 
 **Vendor matrix test suite**
-- 693 tests across 12 test files (up from 210)
+- 901 tests across 14 test files (up from 210)
 - Added uplink scenario tests per vendor: apply commands to device A, parse new device C, verify link detection and port mode
 - Port mode verification (trunk / access / routed) on extracted ports
+- 63 merge-mode config-apply tests covering VLAN dedup, multi-value commands, ACL blocks, key chains, control-plane, cross-vendor merge, and [REDACTED] protection
 
 ### v0.1.0
 
