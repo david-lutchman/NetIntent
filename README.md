@@ -75,9 +75,6 @@ Example prompts:
 
 Once loaded, designed networks work exactly like uploaded configs — you can modify them with change intents, view projected topology, and export CLI scripts.
 
-### Multi-Vendor Config Parsing
-Automatically detects the vendor OS from the config text, extracts hostname and version, and splits the running config into browsable sections: interfaces, VLANs, routing protocols, ACLs, line configs, crypto, QoS, and global commands. Filter by section type to quickly find what you need. If auto-detection is wrong, click the vendor badge in the sidebar to override it manually.
-
 ### Interactive Network Topology
 An auto-generated network diagram built from your uploaded configs. The topology engine detects connections two ways: by matching interface descriptions that reference other device hostnames (e.g. `UPLINK-TO-DIST-SW01`), and by matching IP subnets across devices. The diagram supports:
 
