@@ -1,325 +1,98 @@
 # NetIntent — Network Configuration Assistant
 
-AI-powered desktop application for designing networks from scratch or analyzing existing multi-vendor configurations — then generating precise CLI change scripts from plain English. Describe a network and get complete device configs, or load your existing environment, visualize the topology, and export ready-to-paste commands. All processing happens locally; only redacted excerpts are sent to the LLM.
+AI-powered desktop app for designing networks from scratch or analyzing existing multi-vendor configs — then generating precise CLI change scripts from plain English. All processing happens locally; only redacted excerpts reach the LLM.
 
-> **Trial version** — this build includes a 7-day trial. Contact [dlutchman@gmail.com](mailto:dlutchman@gmail.com) to continue after the trial period.
+> **Trial version** — 7-day trial included. Contact [dlutchman@gmail.com](mailto:dlutchman@gmail.com) to continue.
 
 ## Quick Start
 
-1. Download `target/release/netintent.exe` from this repository
-2. Double-click to launch — no installer required
-3. Click the **gear icon** (top right) → choose an LLM provider → paste your API key → Save
-
-**Option A — Design a new network from scratch:**
-
-4. Click **Design Network** in the sidebar
-5. Describe the network you want in plain English (e.g. "3-building campus, Cisco, OSPF, voice VLANs per floor")
-6. The LLM generates complete device configs for every device in the design
-7. Review the summary, addressing scheme, and device list → click **Load into NetIntent**
-8. All devices appear in the sidebar with a full interactive topology
-
-**Option B — Modify existing configs:**
-
-4. Click **Load** to upload one or more device configs (`.cfg`, `.conf`, `.txt`, `.rsc`)
-5. Check the devices you want to target in the sidebar
-6. Click **Make Changes** → describe your intent in plain English → **Analyze**
-7. Review the change plan → approve or reject individual changes
-8. Click **View Topology** to see the projected network state after changes
-9. **Export** scripts per device or all at once
+1. Download `target/release/netintent.exe` — no installer required
+2. Gear icon → choose LLM provider → paste API key → Save
+3. **Design Network** to generate a full environment from a description, or **Load** existing configs
+4. **Make Changes** → describe intent → review plan → export CLI scripts
 
 <img width="1919" height="1031" alt="ni1" src="https://github.com/user-attachments/assets/c82b3a6f-8dbc-4456-af19-266fb2c67cc6" /><img width="1919" height="1033" alt="ni2" src="https://github.com/user-attachments/assets/66f1cea3-1d69-46de-9ead-ffab2375857a" /><img width="1919" height="1031" alt="ni3" src="https://github.com/user-attachments/assets/3ae98631-fafe-4115-b5b5-94ecb20fd731" />
 
-**Requirement:** Windows 10 or 11 with [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (pre-installed on Windows 10 21H2+ and all Windows 11)
+**Requires:** Windows 10/11 with [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (pre-installed on Windows 10 21H2+)
 
 ## Supported Vendors
 
-| Vendor | Format | Detection |
-|--------|--------|-----------|
-| **Cisco IOS / IOS-XE** | Block (`interface ... !`) | `hostname`, `ip address`, `version` |
-| **Arista EOS** | Block (Cisco-like) | `management api http-commands`, `daemon TerminAttr` |
-| **Juniper Junos** | Set-format or hierarchical | `set system host-name`, brace blocks |
-| **Extreme EXOS** | Flat commands | `create vlan ... tag`, `ExtremeXOS` |
-| **Fortinet FortiOS** | `config / end` blocks | `config system global`, `set hostname` |
-| **MikroTik RouterOS** | `/section` hierarchy | `/system identity`, `/interface ethernet` |
-| **HPE / Aruba** | Block (Cisco-like) | `HP ProCurve`, `tagged` port syntax |
-| **Huawei VRP** | `#`-delimited blocks | `sysname`, `vlan batch` |
-| **Nokia SR OS** | Flat `configure` commands | `configure system name`, `configure port` |
-
-The parser scores config text against vendor-specific patterns and picks the highest-confidence match. All vendor parsing, topology inference, and secret redaction happen entirely on your machine.
+Cisco IOS/IOS-XE · Arista EOS · Juniper Junos · Extreme EXOS · Fortinet FortiOS · MikroTik RouterOS · HPE/Aruba · Huawei VRP · Nokia SR OS
 
 ## LLM Providers
 
-| Provider | Key Required | Models |
-|----------|-------------|--------|
-| **Claude** (Anthropic) | Yes — [console.anthropic.com](https://console.anthropic.com) | Claude Sonnet 4, Claude Opus 4 |
-| **Gemini** (Google) | Yes — [aistudio.google.com](https://aistudio.google.com/app/apikey) | Gemini 2.0 Flash, Gemini 2.5 Pro |
-| **ChatGPT** (OpenAI) | Yes — [platform.openai.com](https://platform.openai.com/api-keys) | GPT-4o, GPT-4o mini, o1 |
-| **Ollama** (local) | None | Any locally-pulled model (e.g. `llama3.2`) |
-
-Responses stream token-by-token — you see the JSON being generated in real time rather than waiting for the full response.
+| Provider | Models |
+|----------|--------|
+| **Claude** (Anthropic) | Sonnet 4, Opus 4 |
+| **Gemini** (Google) | 2.0 Flash, 2.5 Pro |
+| **ChatGPT** (OpenAI) | GPT-4o, GPT-4o mini, o1 |
+| **Ollama** (local) | Any pulled model |
 
 ## Features
 
-### AI Network Design (Design from Scratch)
-Describe a network in plain English and the LLM generates complete, production-ready device configs for every device in the design. The planning prompt enforces cross-device consistency: matching VLANs, IP addressing schemes, routing protocol neighbors, trunk allowed VLANs, and interface descriptions that reference neighbor hostnames for automatic topology detection.
-
-- **Any supported vendor** — specify Cisco, Juniper, Arista, Fortinet, or let the LLM pick appropriate vendors per role
-- **Streaming generation** — watch the JSON response build in real time
-- **Review before loading** — summary, addressing scheme, and per-device breakdown with vendor badges
-- **One-click load** — generated configs are parsed and loaded as real devices with full topology, config browser, and change management
-
-Example prompts:
-- "2-building office campus, 5 floors each, Cisco IOS-XE routers and Cisco IOS switches, OSPF area 0, voice VLANs per floor"
-- "Small branch with a Fortinet firewall, HPE Aruba access switch, and a MikroTik router for WAN"
-- "Data center leaf-spine with 4 Arista EOS leaf switches and 2 spine switches, BGP EVPN"
-
-Once loaded, designed networks work exactly like uploaded configs — you can modify them with change intents, view projected topology, and export CLI scripts.
-
-### Interactive Network Topology
-An auto-generated network diagram built from your uploaded configs. The topology engine detects connections two ways: by matching interface descriptions that reference other device hostnames (e.g. `UPLINK-TO-DIST-SW01`), and by matching IP subnets across devices. The diagram supports:
-
-- **Drag** to reposition devices (positions are preserved across restarts)
-- **Scroll** to zoom, **drag background** to pan, **Fit** button to auto-frame
-- **Smart port display** — only connected ports shown by default with a `+N` badge for hidden ports; switch to Connect mode to reveal all physical ports
-- **Port dots** along each device, color-coded by mode (blue = trunk, green = access, gray = shutdown). Routed interfaces and subinterfaces are filtered out for a cleaner view.
-- **Hover** any port for name, mode, VLAN, and allowed VLAN details
-- **Connect mode** — manually link two ports across devices by clicking them (all physical ports become visible)
-- **Delete links** — select a link and remove it
-- **Port detail panel** — click the ℹ button on any device to see all interfaces, SVIs, IP addresses, and connections
-- **Double-click** any device to jump to its config view
-
-### Projected Topology (Before/After)
-After generating a change plan, click **View Topology** or the Topology tab. A **Current / After Changes** toggle compares the network now versus after approved changes are applied:
-
-- Green ring + **NEW** badge on added ports, VLANs, and links
-- Amber ring + **MOD** badge on modified ports (mode changes, VLAN reassignment, trunk updates)
-- Red dashed + **DEL** badge on removed or shutdown elements
-- Devices with changes get a dashed teal border
-
-The projection updates live — toggle changes on/off and the topology reflects it immediately.
-
-### Secret Redaction
-All passwords, enable secrets, SNMP communities, TACACS/RADIUS keys, BGP neighbor passwords, OSPF/EIGRP authentication keys, and crypto pre-shared keys are automatically stripped before anything is sent to the LLM. A redaction panel shows exactly what was found, with per-item reveal toggles.
-
-### AI-Powered Change Generation (Streaming)
-Describe your intent in plain English. The system extracts only the relevant config sections, redacts secrets, and sends them to your chosen LLM along with a structured system prompt that enforces vendor-correct CLI syntax, proper command hierarchy, impact assessment, and rollback generation. Supports single-device and coordinated multi-device changes.
-
-Responses stream token-by-token — the raw JSON appears in the processing pane as it arrives, then is parsed and rendered as a structured plan when complete.
-
-### Change Plan Review
-Every generated change is individually approvable with full context: action type (add/modify/remove), affected section, reasoning, impact rating (low/medium/high), and the exact CLI commands. Copy individual command blocks to clipboard, view before/after diffs per section, and export per-device or environment-wide scripts with rollback commands included.
-
-## Example Intents
-
-**Network design (from scratch):**
-- "3-site enterprise WAN with Cisco IOS-XE routers, OSPF, DMVPN hub-and-spoke, each site has a pair of access switches"
-- "Single-building office: Fortinet firewall, 2 HPE Aruba switches stacked, guest and corporate VLANs, RADIUS"
-- "Juniper leaf-spine data center fabric, 4 leaf + 2 spine, eBGP underlay, VXLAN EVPN overlay"
-
-**Single device:**
-- "Add VLAN 100 named Marketing, assign Gi0/3 and Gi0/4 as access ports, and trunk it on all uplinks" *(Cisco)*
-- "Configure OSPF area 0 on all Layer 3 interfaces with MD5 authentication" *(Cisco / Arista)*
-- "Enable BFD on all OSPF interfaces with 300ms intervals and multiplier 3" *(Arista)*
-- "Add a new VLAN 50 named Contractors with ID 50, create an IRB interface with IP 10.10.50.1/24" *(Juniper)*
-- "Create a new address object for the IoT segment and add a firewall policy denying it access to the TRUST-LAN zone" *(Fortinet)*
-- "Add a RADIUS server at 10.0.0.21 as a backup with key 'radiusbackup'" *(HPE/Aruba)*
-- "Add OSPF authentication on GigabitEthernet0/0/0 using MD5" *(Huawei)*
-- "Configure a BGP peer at 10.255.0.32 as an iBGP neighbor" *(Nokia)*
-
-**Multi-device:**
-- "Add VLAN 200 named Analytics across all switches and ensure all interswitch trunks allow it"
-- "Standardize NTP to 10.0.0.10 as primary and 10.0.0.11 as secondary on every device"
-- "Add a syslog server at 10.0.0.51 as a secondary log target on all devices"
-- "Change the OSPF hello interval to 10 seconds and dead interval to 40 seconds on all OSPF devices"
-
-**Adversarial (tests the LLM's guardrails):**
-- "Delete VLAN 1" — should warn about native VLAN risk
-- "Enable telnet on all VTY lines" — should flag as a security risk
-- "Remove the OSPF configuration from the Nokia core gateway" — should warn about adjacency loss
-
-## Known Issues (v0.2.0) — actively being fixed
-
-The following issues have been identified since the v0.2.0 release and fixes are in progress for the next update:
-
-**Diagnostic/optimization fixes appending config blocks instead of merging in-place**
-- When the Diagnose, Optimize, or Audit tools generate suggested fixes, the resulting CLI commands were being appended at the bottom of the device config instead of modifying existing config sections in-place. Device configs should always show clean running-config format with all changes applied to the correct location. *Status: fix implemented — merge-mode config engine now handles incremental CLI commands separately from full-section replacements.*
-
-**Named ACL blocks, key chains, and control-plane treated as global commands**
-- `ip access-list extended/standard NAME`, `key chain NAME`, and `control-plane` were not recognized as block headers, causing their sub-commands (permit/deny entries, key-strings, service-policies) to be dumped as flat global lines at the end of the config. *Status: fixed — these are now properly recognized as block-structured sections.*
-
-**ACL permit/deny lines replacing each other instead of coexisting**
-- When merging commands into an existing named ACL, different `permit` and `deny` entries (e.g. `permit tcp any any eq 22` and `permit icmp any any`) would overwrite each other because they shared the same command key. ACL entries are inherently multi-value and should coexist. *Status: fixed — ACL entries now use the full line as their identity key.*
-
-**`interface range` syntax appearing in suggested fixes**
-- The LLM sometimes generated `interface range GigabitEthernet0/1-4` syntax in diagnostic fixes, which doesn't merge correctly into individual interface blocks. *Status: fixed — diagnostic prompts now explicitly prohibit interface range syntax.*
-
-**`[REDACTED]` appearing in device configs after applying fixes**
-- When the LLM echoed back redacted secrets in its suggested fix commands, those `[REDACTED]` strings would overwrite real (hashed) passwords in the config. *Status: fixed — merge mode now skips any command containing `[REDACTED]`.*
-
-**Cisco IOS-XE configs detected as Cisco IOS**
-- Configs with `version 17.x` and `license boot level` were sometimes detected as IOS instead of IOS-XE because shared Cisco patterns (hostname, interface, router, etc.) only scored for IOS. *Status: fixed — shared patterns now score for both IOS and IOS-XE, letting the version-specific signals determine the winner.*
-
-**VLAN add deduplication**
-- Applying `switchport trunk allowed vlan add 100` twice to the same interface would produce `10,20,30,100,100` instead of `10,20,30,100`. *Status: fixed — dedup logic ensures idempotency.*
-
-These fixes are tested (900+ unit tests passing) and will be included in the next binary release.
+- **AI Network Design** — describe a network in plain English, get complete device configs for every device
+- **Interactive Topology** — auto-generated from configs via description matching and subnet detection; drag, zoom, pan, manual link creation
+- **Projected Before/After** — toggle current vs. post-change topology with color-coded diffs (added/modified/removed)
+- **OpenConfig Normalization** — vendor-neutral structured extraction (interfaces, VLANs, system data) runs once during parsing; all consumers read structured data instead of re-parsing raw text
+- **Change Validation** — catches invented interfaces, undefined VLANs, duplicate IPs, orphan next-hops, router-ID conflicts, MTU mismatches, misplaced ACL entries, and commands after `end`
+- **OpenConfig Value Constraints** — VLAN range, MTU range, prefix length, BGP AS, and OSPF cost validated per vendor
+- **Secret Redaction** — passwords, SNMP communities, TACACS/RADIUS keys, BGP/OSPF auth stripped before LLM call
+- **Streaming Responses** — token-by-token rendering as the LLM generates
+- **Multi-device Coordination** — cross-device consistency for VLANs, trunks, routing, and IP addressing
+- **Config Apply Engine** — vendor-native in-place merge for Cisco, Juniper, Fortinet, Nokia, Aruba, Huawei
+- **SQLite Persistence** — devices, topology positions, plans, and settings survive restarts
+- **Export** — per-device or environment-wide CLI scripts with rollback commands
 
 ## Sample Configs
 
-Ten test configs are included in the `samples/` folder — one device per vendor, all part of a coherent "ACME Corp" multi-vendor enterprise network with cross-device interface references for topology auto-detection:
-
-| File | Vendor | Hostname | Role |
-|------|--------|----------|------|
-| `cisco-iosxe-edge-rtr01.cfg` | Cisco IOS-XE | CSR-EDGE-RTR01 | Edge router, BGP/OSPF, NAT |
-| `cisco-ios-access-sw03.cfg` | Cisco IOS | IOS-ACCESS-SW03 | Floor 3 access switch |
-| `arista-spine01.cfg` | Arista EOS | ARISTA-SPINE01 | DC spine switch, MSTP, OSPF |
-| `juniper-srx-fw01.conf` | Juniper Junos | SRX-FW01 | Perimeter firewall, zones/policies |
-| `mikrotik-branch-rtr01.rsc` | MikroTik RouterOS | MT-BRANCH-RTR01 | Branch WAN router, PPPoE |
-| `fortinet-dc-fw01.conf` | Fortinet FortiOS | FG-DC-FW01 | DC internal firewall, HA |
-| `extreme-tor-sw01.cfg` | Extreme EXOS | EXOS-TOR-SW01 | Top-of-rack switch |
-| `hpe-aruba-wlan-sw01.cfg` | HPE/Aruba | ARUBA-WLAN-SW01 | Wireless infrastructure, PoE |
-| `huawei-dist-sw01.cfg` | Huawei VRP | HW-DIST-SW01 | Distribution switch, DHCP relay |
-| `nokia-pe-rtr01.cfg` | Nokia SR OS | NOKIA-PE-RTR01 | MPLS PE router, L3VPN |
-
-A multi-device Cisco campus set is also available in `samples/cisco-campus/` (2 routers + 10 floor switches).
-
-
-## Architecture
-
-NetIntent is a local-first desktop application. All config parsing, secret redaction, and topology inference happen on your machine. The only external communication is the streaming API call to your chosen LLM provider, which receives only redacted config excerpts.
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    NetIntent Desktop                     │
-│                                                         │
-│  ┌─────────────┐   ┌──────────────┐   ┌─────────────┐  │
-│  │  React UI   │──▶│  Tauri IPC   │──▶│ Rust Backend │  │
-│  │  (WebView2) │◀──│  (Commands)  │◀──│  (Native)    │  │
-│  └─────────────┘   └──────────────┘   └─────────────┘  │
-│         │                                     │         │
-│         ▼                                     ▼         │
-│  ┌─────────────┐                     ┌─────────────┐    │
-│  │  Parser     │                     │  File I/O   │    │
-│  │  Redactor   │                     │  SSE Stream  │    │
-│  │  Topology   │                     │  (reqwest)   │    │
-│  │  Prompts    │                     └──────┬──────┘    │
-│  └─────────────┘                            │           │
-│                                             ▼           │
-│                                  ┌──────────────────┐   │
-│                                  │ Claude / Gemini   │   │
-│                                  │ OpenAI / Ollama   │   │
-│                                  │  (streaming SSE)  │   │
-│                                  └──────────────────┘   │
-└─────────────────────────────────────────────────────────┘
-```
-
-### Technology Stack
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Desktop Runtime** | Tauri 2.0 | Native window, IPC bridge, system dialogs, filesystem access |
-| **Backend** | Rust | File I/O, streaming HTTPS to LLM APIs via reqwest + rustls-tls |
-| **Frontend** | React 18 + TypeScript | UI, state management, multi-vendor config parsing |
-| **Persistence** | SQLite (tauri-plugin-sql) | Devices, topology positions, plans, and settings survive restarts |
-| **Styling** | Tailwind CSS | Utility-first styling with custom dark theme |
-| **Bundler** | Vite + Terser | Production build with identifier mangling, no source maps |
-| **Diagram** | SVG (hand-rolled) | Interactive network topology with pan, zoom, drag |
-
-### Data Flow
-
-1. **Upload** — User selects config files via native dialog → Rust reads from disk → returns raw text
-2. **Parse** — Frontend detects vendor, splits into sections, extracts hostname/version
-3. **Topology** — Topology engine extracts ports, VLANs, and infers inter-device links
-4. **Intent** — User describes change → relevant sections extracted, secrets redacted, prompt built
-5. **LLM Call** — Rust streams SSE from the provider → emits chunks to frontend via Tauri events
-6. **Plan** — Frontend accumulates stream, parses JSON, renders per-device change plans
-7. **Projection** — Topology engine applies approved changes to a cloned topology, marks diffs
-8. **Export** — Approved changes exported as CLI scripts with rollback via native save dialog
-
-## Security
-
-- **Configs never leave your machine** — parsing, redaction, and topology inference all run locally
-- **Only redacted excerpts** are sent to the LLM API — all secrets are stripped first
-- **Your API key, your billing** — NetIntent has no servers, no accounts, no telemetry
-- **API key stored locally** — saved to SQLite in your app data directory, never sent anywhere except the LLM provider
-- **Direct API calls** — your machine talks directly to the provider over TLS
-- **No DevTools in production** — the WebView2 inspector is compiled out; right-click and inspect shortcuts are blocked
-- **Hardened JS bundle** — identifier mangling, no source maps, console stripped
+Ten configs in `samples/` covering all supported vendors in a coherent "ACME Corp" multi-vendor enterprise network with cross-device references for topology auto-detection.
 
 ## Changelog
 
+### v0.3.0
+
+**OpenConfig normalization layer**
+- Vendor-neutral structured extraction runs during parsing — interfaces, VLANs, and system data (host IPs, router IDs) extracted once into a `NormalizedConfig` object
+- 8 vendor normalizers consolidate extraction logic previously scattered across topology and validation modules
+- ~485 lines of redundant legacy extraction code removed from topology.ts and validate.ts
+- 1136 tests passing (43 new normalization tests)
+
+**Structural validation**
+- `ACL_ENTRY_MISPLACED` — catches `permit`/`deny` lines placed outside an access-list section context
+- `COMMANDS_AFTER_END` — catches commands appended after `end` (Cisco/Arista only; Fortinet's block `end` excluded)
+
+**OpenConfig value-level validation (v0.2.1)**
+- VLAN ID range, MTU range, IPv4 prefix length, BGP AS number, and OSPF cost validated per vendor using OpenConfig YANG-derived constraints
+- 7 new validation codes: `VLAN_OUT_OF_RANGE`, `MTU_OUT_OF_RANGE`, `PREFIX_LENGTH_INVALID`, `BGP_AS_INVALID`, `OSPF_COST_OUT_OF_RANGE`, `ROUTER_ID_DUPLICATE`, `MTU_MISMATCH`
+
 ### v0.2.0
 
-**Multi-vendor config-apply engine**
-- Config-apply now handles vendor-native block structures in-place instead of dumb-appending:
-  - **Fortinet FortiOS** — parses `config / edit / next / end` hierarchy and merges edits into existing sections
-  - **Juniper Junos** — merges `set` / `delete` commands, handles additive `vlan members`, replaces by path key
-  - **Nokia SR OS** — replaces existing port blocks in-place, injects new content before closing `exit`
-  - **HPE Aruba** — uses `exit` (not `!`) as block separator, replaces interface/VLAN blocks correctly
-  - **Cisco IOS / IOS-XE / Arista EOS / Huawei VRP** — existing block-replace logic refined
-
-**Improved LLM prompt accuracy**
-- Fixed "interface 3" ambiguity — the LLM no longer misinterprets port numbers as device numbers (e.g. "uplink to interface 3 of the switch" now correctly targets port 3 on that device, not device #3)
-- Added explicit SPECIFIC PORT guidance in the system prompt for uplink target selection
-
-**Config preview before commit**
-- Plan view now shows a real "Current / After commit" side-by-side diff using the same `applyCommandsToRawConfig()` code path as the actual commit — no more mismatches between preview and committed config
-
-**Nokia SR OS port extraction fix**
-- Nokia port/IP extraction now cross-references physical port sections with router interface sections to correctly map IP addresses to physical ports
-
-**Cleaner topology view**
-- Routed interfaces and subinterfaces (e.g. `Gi0/0.100`) are no longer shown as port dots or links in the topology
-- Smart port filtering: only connected ports displayed in Select mode, all physical ports revealed in Connect mode
-- Hidden port count badge (`+N`) on each device so you know how many ports are available
-
-**Vendor matrix test suite**
-- 901 tests across 14 test files (up from 210)
-- Added uplink scenario tests per vendor: apply commands to device A, parse new device C, verify link detection and port mode
-- Port mode verification (trunk / access / routed) on extracted ports
-- 63 merge-mode config-apply tests covering VLAN dedup, multi-value commands, ACL blocks, key chains, control-plane, cross-vendor merge, and [REDACTED] protection
+- Multi-vendor config-apply engine (Fortinet, Juniper, Nokia, Aruba, Huawei, Cisco)
+- Improved LLM prompt accuracy (port targeting, interface range prohibition)
+- Config preview before commit (current/after side-by-side diff)
+- Cleaner topology view (smart port filtering, hidden port badges)
+- 901 tests across 14 test files
 
 ### v0.1.0
 
-- Initial beta release
-- Full pipeline: upload → parse → redact → prompt → LLM → plan → export
-- 9 vendor parsers with auto-detection
-- Interactive SVG topology with projected before/after view
-- Secret redaction (14 regex patterns)
-- SQLite persistence — all state survives app restarts
-- Streaming LLM responses (Claude, Gemini, ChatGPT, Ollama)
-- Config validation engine with inline warnings
-- Multi-device coordinated changes
+- Initial beta: upload → parse → redact → prompt → LLM → plan → export
+- 9 vendor parsers, interactive topology, secret redaction, SQLite persistence
+- Streaming LLM responses, config validation, multi-device changes
 
 ## Troubleshooting
 
-**"WebView2 not found"**
-Download the Evergreen Bootstrapper from [developer.microsoft.com/en-us/microsoft-edge/webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
+**WebView2 not found** — download from [developer.microsoft.com](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
 
-**API errors**
-- Verify your API key is correct in Settings
-- Gemini free tier has rate limits (15 RPM) — wait and retry
-- Claude and OpenAI require account credit
-- Ollama: ensure `ollama serve` is running and the model is pulled (`ollama pull llama3.2`)
-- If you see network errors, check that your firewall allows outbound HTTPS to the provider
+**API errors** — verify API key; Gemini free tier has rate limits (15 RPM); Ollama needs `ollama serve` running
 
-**Topology not detecting links**
-Auto-detection relies on interface descriptions referencing other device hostnames, or matching IP subnets. If your configs don't have these, use Connect mode to manually link ports.
+**Topology not detecting links** — auto-detection needs interface descriptions referencing hostnames or matching subnets; use Connect mode to link manually
 
-**Vendor detected incorrectly**
-Click the vendor badge in the sidebar and select the correct vendor from the dropdown.
+## Security
 
-## Feedback
-
-When testing, please note any issues with:
-- CLI commands that are incorrect or incomplete for a specific vendor/OS version
-- Missing warnings for risky changes (STP reconvergence, trunk pruning, etc.)
-- Parser failures on production configs (unusual syntax, multi-line banners, etc.)
-- Topology detection misses or false positives
-- Vendor misdetection
-
-Contact: [dlutchman@gmail.com](mailto:dlutchman@gmail.com)
+Configs never leave your machine. Only redacted excerpts reach the LLM. Your API key is stored locally in SQLite. No servers, no accounts, no telemetry.
 
 ---
 
-*NetIntent v0.2.0 — Trial · Windows only*
+*NetIntent v0.3.0 — Trial · Windows only*
+
+Contact: [dlutchman@gmail.com](mailto:dlutchman@gmail.com)
