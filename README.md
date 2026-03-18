@@ -4,16 +4,30 @@ AI-powered desktop app for designing networks from scratch or analyzing existing
 
 > **Trial version** — 7-day trial included. Contact [dlutchman@gmail.com](mailto:dlutchman@gmail.com) to continue.
 
+## Downloads
+
+| OS | File | Notes |
+|----|------|-------|
+| **Windows** | [`NetIntent_0.3.0_x64-setup.exe`](binaries/windows/NetIntent_0.3.0_x64-setup.exe) | NSIS installer |
+| | [`NetIntent_0.3.0_x64_en-US.msi`](binaries/windows/NetIntent_0.3.0_x64_en-US.msi) | MSI installer |
+| | [`netintent.exe`](binaries/windows/netintent.exe) | Portable — no install required |
+| **macOS** | [`NetIntent_0.3.0_aarch64.dmg`](binaries/macos/NetIntent_0.3.0_aarch64.dmg) | Apple Silicon disk image |
+| **Linux** | [`NetIntent_0.3.0_amd64.deb`](binaries/linux/NetIntent_0.3.0_amd64.deb) | Debian/Ubuntu |
+| | [`NetIntent_0.3.0_amd64.AppImage`](binaries/linux/NetIntent_0.3.0_amd64.AppImage) | Portable AppImage |
+| | [`NetIntent-0.3.0-1.x86_64.rpm`](binaries/linux/NetIntent-0.3.0-1.x86_64.rpm) | Fedora/RHEL |
+
 ## Quick Start
 
-1. Download `target/release/netintent.exe` — no installer required
+1. Download the binary for your OS from the table above
 2. Gear icon → choose LLM provider → paste API key → Save
 3. **Design Network** to generate a full environment from a description, or **Load** existing configs
 4. **Make Changes** → describe intent → review plan → export CLI scripts
 
 <img width="1919" height="1031" alt="ni1" src="https://github.com/user-attachments/assets/c82b3a6f-8dbc-4456-af19-266fb2c67cc6" /><img width="1919" height="1033" alt="ni2" src="https://github.com/user-attachments/assets/66f1cea3-1d69-46de-9ead-ffab2375857a" /><img width="1919" height="1031" alt="ni3" src="https://github.com/user-attachments/assets/3ae98631-fafe-4115-b5b5-94ecb20fd731" />
 
-**Requires:** Windows 10/11 with [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (pre-installed on Windows 10 21H2+)
+**Windows:** Requires [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (pre-installed on Windows 10 21H2+)
+**macOS:** Apple Silicon (aarch64). Right-click → Open on first launch to bypass Gatekeeper.
+**Linux:** Requires WebKitGTK 4.1. On Debian/Ubuntu: `sudo apt install libwebkit2gtk-4.1-0`
 
 ## Supported Vendors
 
@@ -94,6 +108,6 @@ Configs never leave your machine. Only redacted excerpts reach the LLM. Your API
 
 ---
 
-*NetIntent v0.3.0 — Trial · Windows only*
+*NetIntent v0.3.0 — Trial · Windows · macOS · Linux*
 
 Contact: [dlutchman@gmail.com](mailto:dlutchman@gmail.com)
