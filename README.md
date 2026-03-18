@@ -36,6 +36,7 @@ Cisco IOS/IOS-XE · Arista EOS · Juniper Junos · Extreme EXOS · Fortinet Fort
 - **OpenConfig Normalization** — vendor-neutral structured extraction (interfaces, VLANs, system data) runs once during parsing; all consumers read structured data instead of re-parsing raw text
 - **Change Validation** — catches invented interfaces, undefined VLANs, duplicate IPs, orphan next-hops, router-ID conflicts, MTU mismatches, misplaced ACL entries, and commands after `end`
 - **OpenConfig Value Constraints** — VLAN range, MTU range, prefix length, BGP AS, and OSPF cost validated per vendor
+- **Diagnostics** — three AI-driven modes: *Diagnose* (describe a symptom, get root-cause analysis with fix commands), *Optimize* (goal-driven: redundancy, performance, security, simplification, best-practices, scalability), and *Audit* (full environment health check with severity-ranked findings and a health score)
 - **Secret Redaction** — passwords, SNMP communities, TACACS/RADIUS keys, BGP/OSPF auth stripped before LLM call
 - **Streaming Responses** — token-by-token rendering as the LLM generates
 - **Multi-device Coordination** — cross-device consistency for VLANs, trunks, routing, and IP addressing
